@@ -1,6 +1,6 @@
 import { BadRequestException, CanActivate, ExecutionContext, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UsersService } from 'src/modules/users/services/users.service';
+import { UsersService } from 'src/modules/users/user/services/users.service';
 // import * as moment from 'moment-timezone';
 import { DEFAULT_TIMEZONE } from 'src/common/config/timezone.config';
 

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
-import { User } from 'src/modules/users/users.model';
+import { User } from 'src/modules/users/user/users.model';
 
 export type HouseDocument = House & Document;
 

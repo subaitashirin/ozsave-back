@@ -1,6 +1,6 @@
 import { ModelDefinition } from "@nestjs/mongoose";
 import { House, HouseSchema } from "src/modules/house/house.model";
-import { User, UserSchema } from "src/modules/users/users.model";
+import { User, UserSchema } from "src/modules/users/user/users.model";
 
 const models = {
 	'User': {

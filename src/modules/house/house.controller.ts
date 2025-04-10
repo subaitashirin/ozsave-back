@@ -6,7 +6,7 @@ import { Roles } from 'src/common/decorators/roles.decorator';
 import { HouseService } from './services/house.service';
 import { AddHouseDto } from './house.validation';
 import { ResponseMessage } from 'src/common/decorators/response_message.decorator';
-import { IFullUser } from '../users/users.interface';
+import { IFullUser } from '../users/user/users.interface';
 import { CurrentUser } from 'src/common/decorators/user.decorator';
 
 @ApiTags('House')

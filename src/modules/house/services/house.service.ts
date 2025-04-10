@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { IHouse } from '../house.interface';
-import { IUser } from 'src/modules/users/users.interface';
+import { IUser } from 'src/modules/users/user/users.interface';
 import { AddHouseDto } from '../house.validation';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { User } from 'src/modules/users/users.model';
+import { User } from 'src/modules/users/user/users.model';
 import mongoose, { Model } from 'mongoose';
 import { House } from '../house.model';
 import e from 'express';
