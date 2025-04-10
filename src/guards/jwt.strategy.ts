@@ -18,7 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     // set all user but the password on the JWT
-    // async validate({ password, ...rest }: IUser) {
-    //     return rest
-    // }
+    async validate({ ...rest }: IUser) {
+        return rest
+    }
 }

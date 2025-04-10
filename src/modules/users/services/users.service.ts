@@ -2,8 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../users.model';
 import { Model } from 'mongoose';
-import envConfig from 'src/common/config/envConfig';
-import { CLIENT_RENEG_LIMIT } from 'tls';
 import { isIn } from 'class-validator';
 
 @Injectable()

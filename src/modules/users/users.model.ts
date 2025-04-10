@@ -35,8 +35,8 @@ export class User {
 	@Prop({
 		required: false,
 		enum: {
-			values: ['admin', 'user'],
-			message: 'Role is either: user or admin',
+			values: ['super-admin', 'admin', 'user'],
+			message: 'Role is: super-admin, admin or user',
 		},
 		default: 'user',
 	})
