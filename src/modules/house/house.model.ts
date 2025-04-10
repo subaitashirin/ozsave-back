@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
-import { User } from 'src/modules/users/users.model';
+import { User } from 'src/modules/users/user/users.model';
 
 export type HouseDocument = House & Document;
 
@@ -26,6 +26,14 @@ export class House {
 		ref: 'User',
 	})
 	members: mongoose.Types.ObjectId[];
+
+	@Prop({
+		required: false,
+		type: [mongoose.Schema.Types.ObjectId],
+		ref: 'User',
+		default: [],
+	})
+	memberInvitations: mongoose.Types.ObjectId[];
 
 	createdAt: Date;
 	updatedAt: Date;

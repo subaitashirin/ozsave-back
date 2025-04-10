@@ -3,10 +3,11 @@ import { ConfigModule } from '@nestjs/config';
 import envConfig from './common/config/envConfig';
 import { DatabaseModule } from './common/database/database.module';
 import { selectEnv } from './common/env/config';
-import { UsersModule } from './modules/users/users.module';
+import { UsersModule } from './modules/users/user/users.module';
 import { GlobalLoggerMiddleware } from './middlewares/globalLogger';
 import { AuthModule } from './modules/auth/auth.module';
 import { HouseModule } from './modules/house/house.module';
+import { AdminModule } from './modules/users/admin/admin.module';
 
 @Module({
 	imports: [
@@ -19,6 +20,7 @@ import { HouseModule } from './modules/house/house.module';
 		UsersModule,
 		AuthModule,
 		HouseModule,
+		AdminModule,
 	],
 	controllers: [],
 	providers: [Logger],

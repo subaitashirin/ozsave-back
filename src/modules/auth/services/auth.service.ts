@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User } from 'src/modules/users/users.model';
+import { User } from 'src/modules/users/user/users.model';
 import { AUTH_ERROR_CAUSE, AUTH_ERROR_MESSAGES } from '../auth.constant';
 import { comparePassword, hashPassword } from 'src/utils/bcrypt.utils';
 import { JwtService } from '@nestjs/jwt';
-import { IFullUser, IUser } from 'src/modules/users/users.interface';
+import { IFullUser, IUser } from 'src/modules/users/user/users.interface';
 
 @Injectable()
 export class AuthService {
