@@ -45,10 +45,11 @@ export class HouseService {
             await this.userModel.findByIdAndUpdate(
                 user._id,
                 {
-                    houseId: savedHouse._id,
-
                     // once house is created, the user becomes admin for the house
                     // so we need to update the user role to admin
+                    // remove all house invitations as the user is now in a house
+                    houseId: savedHouse._id,
+                    houseInvitations: [],
                     role: 'admin',
                 },
                 { new: true, session }

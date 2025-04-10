@@ -16,7 +16,7 @@ export class UsersController {
 
     @Get('search')
     @UseGuards(RolesGuard)
-    @Roles(USER_ROLE.user)
+    @Roles(USER_ROLE.admin)
     async searchUserByNameOrEmail(@Query('search') search: string) {
         return this.usersService.searchUserByNameOrEmail(search);
     }

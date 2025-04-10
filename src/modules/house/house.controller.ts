@@ -8,6 +8,7 @@ import { AddHouseDto } from './house.validation';
 import { ResponseMessage } from 'src/common/decorators/response_message.decorator';
 import { IFullUser } from '../users/user/users.interface';
 import { CurrentUser } from 'src/common/decorators/user.decorator';
+import { USER_ROLE } from '../users/user/users.constant';
 
 @ApiTags('House')
 @Controller('house')
@@ -21,7 +22,7 @@ export class HouseController {
 
     @Post('add')
     @UseGuards(RolesGuard)
-    @Roles('user')
+    @Roles(USER_ROLE.user)
     @ApiBody({ type: AddHouseDto })
 	@ResponseMessage("House added successfully")
     async addHouse(

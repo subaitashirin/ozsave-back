@@ -27,6 +27,14 @@ export class House {
 	})
 	members: mongoose.Types.ObjectId[];
 
+	@Prop({
+		required: false,
+		type: [mongoose.Schema.Types.ObjectId],
+		ref: 'User',
+		default: [],
+	})
+	memberInvitations: mongoose.Types.ObjectId[];
+
 	createdAt: Date;
 	updatedAt: Date;
 }

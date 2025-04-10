@@ -53,6 +53,14 @@ export class User {
 	})
 	houseId: mongoose.Types.ObjectId;
 
+	@Prop({
+		required: false,
+		default: [],
+		type: [mongoose.Schema.Types.ObjectId],
+		ref: 'House',
+	})
+	houseInvitations: mongoose.Types.ObjectId[];
+
 	createdAt: Date;
 	updatedAt: Date;
 	timezone?: string;
