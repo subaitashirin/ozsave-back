@@ -6,7 +6,8 @@ export interface IUser {
 	name: string;
 	email: string;
 
-	houseId?: mongoose.Types.ObjectId;
+	house?: mongoose.Types.ObjectId;
+	houseInvitations?: mongoose.Types.ObjectId[];
 
 	role?: string;
 	imageUrl?: string;
@@ -16,7 +17,8 @@ export interface IFullUser extends IUser {
 	_id: string;
 	role: string;
 
-	houseId: mongoose.Types.ObjectId;
+	house: mongoose.Types.ObjectId;
+	houseInvitations: mongoose.Types.ObjectId[];
 
 	timezone: string;
 	createdAt: Date;

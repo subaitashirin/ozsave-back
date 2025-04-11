@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { AdminService } from './services/admin.service';
 import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
@@ -19,6 +19,14 @@ export class AdminController {
     constructor(
         private readonly adminService: AdminService,
     ) { }
+
+    // search user by name or email
+    @Get('search')
+    @UseGuards(RolesGuard)
+    @Roles(USER_ROLE.admin)
+    async searchUserByNameOrEmail(@Query('search') search: string) {
+        return this.adminService.searchUserByNameOrEmail(search);
+    }
 
     @Put('invitation/:userId')
     @UseGuards(RolesGuard)

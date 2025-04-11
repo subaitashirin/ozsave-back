@@ -14,6 +14,25 @@ export class AdminService {
         @InjectConnection() private readonly connection: mongoose.Connection,
     ) { }
 
+    // search user by name or email
+    async searchUserByNameOrEmail(search: string): Promise<Partial<User>[]> {
+        const res = await this.userModel.find(
+            {
+                $or: [
+                    { name: { $regex: search, $options: 'i' } },
+                    { email: { $regex: search, $options: 'i' } }
+                ]
+            },
+            {
+                name: 1,
+                email: 1,
+                house: 1,
+                _id: 1,
+            }
+        );
+        return res;
+    }
+
     // send house invitation
     async sendHouseInvitation(userId: string, user: IUser) {
 
@@ -36,12 +55,12 @@ export class AdminService {
                 throw new Error("User not found");
             }
 
-            if (invitedUser?.houseId) {
+            if (invitedUser?.house) {
                 throw new Error("User already in a house");
             }
 
             // check if house exists
-            const house = await this.houseModel.findById(user.houseId).session(session);
+            const house = await this.houseModel.findById(user.house).session(session);
             if (!house) {
                 throw new Error("House not found");
             }
@@ -63,7 +82,7 @@ export class AdminService {
 
             // update house invitations
             await this.houseModel.updateOne(
-                { _id: new mongoose.Types.ObjectId(user.houseId) },
+                { _id: new mongoose.Types.ObjectId(user.house) },
                 {
                     $push: { memberInvitations: new mongoose.Types.ObjectId(userId) },
                 },
@@ -100,7 +119,7 @@ export class AdminService {
             }
 
             // check if house exists
-            const house = await this.houseModel.findById(user.houseId).session(session);
+            const house = await this.houseModel.findById(user.house).session(session);
             if (!house) {
                 throw new Error("House not found");
             }
@@ -116,7 +135,7 @@ export class AdminService {
 
             // update house invitations
             await this.houseModel.updateOne(
-                { _id: new mongoose.Types.ObjectId(user.houseId) },
+                { _id: new mongoose.Types.ObjectId(user.house) },
                 {
                     $pull: { memberInvitations: new mongoose.Types.ObjectId(userId) },
                 },
@@ -153,7 +172,7 @@ export class AdminService {
             }
 
             // check if house exists
-            const house = await this.houseModel.findById(user.houseId).session(session);
+            const house = await this.houseModel.findById(user.house).session(session);
             if (!house) {
                 throw new Error("House not found");
             }
@@ -163,7 +182,7 @@ export class AdminService {
                 { _id: new mongoose.Types.ObjectId(userId) },
                 {
                     $set: {
-                        houseId: null,
+                        house: null,
                         role: 'user', // default role
                     }
                 },
@@ -172,7 +191,7 @@ export class AdminService {
 
             // update house
             await this.houseModel.updateOne(
-                { _id: new mongoose.Types.ObjectId(user.houseId) },
+                { _id: new mongoose.Types.ObjectId(user.house) },
                 {
                     $pull: { members: new mongoose.Types.ObjectId(userId) },
                 },

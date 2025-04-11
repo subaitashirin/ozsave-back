@@ -11,7 +11,7 @@ export type UserDocument = User & Document;
 // 	isInHouse: boolean;
 
 // 	@Prop({ required: false, default: null })
-// 	houseId: mongoose.Types.ObjectId;
+// 	house: mongoose.Types.ObjectId;
 
 // 	@Prop({ required: false, default: [] })
 // 	houseMembers: mongoose.Types.ObjectId[];
@@ -51,7 +51,7 @@ export class User {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'House',
 	})
-	houseId: mongoose.Types.ObjectId;
+	house: mongoose.Types.ObjectId;
 
 	@Prop({
 		required: false,
