@@ -61,4 +61,16 @@ export class AdminController {
     ) {
         return await this.adminService.removeUser(userId, user);
     }
+
+    // hand over control
+    @Put('handover-control/:userId')
+    @UseGuards(RolesGuard)
+    @Roles(USER_ROLE.admin)
+    @ResponseMessage("Control handed over successfully")
+    async handOverControl(
+        @Param('userId', ValidateMongoId) userId: string,
+        @CurrentUser() user: IFullUser
+    ) {
+        return await this.adminService.handoverControl(userId, user);
+    }
 }

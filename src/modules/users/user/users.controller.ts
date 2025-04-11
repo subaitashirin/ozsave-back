@@ -39,4 +39,15 @@ export class UsersController {
     ) {
         return await this.usersService.declineInvitation(house, user);
     }
+
+    // leave house
+    @Put('leave-house')
+    @UseGuards(RolesGuard)
+    @Roles(USER_ROLE.user)
+    @ResponseMessage("Left house successfully")
+    async leaveHouse(
+        @CurrentUser() user: IFullUser
+    ) {
+        return await this.usersService.leaveHouse(user);
+    }
 }

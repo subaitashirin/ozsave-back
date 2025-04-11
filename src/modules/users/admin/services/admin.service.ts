@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 import { House } from 'src/modules/house/house.model';
 import { User } from '../../user/users.model';
 import { IUser } from '../../user/users.interface';
+import { COLLECTIONS } from 'src/common/config/consts';
 
 @Injectable()
 export class AdminService {
@@ -18,6 +19,7 @@ export class AdminService {
     async searchUserByNameOrEmail(search: string): Promise<Partial<User>[]> {
         const res = await this.userModel.find(
             {
+                role: 'user',
                 $or: [
                     { name: { $regex: search, $options: 'i' } },
                     { email: { $regex: search, $options: 'i' } }
@@ -209,4 +211,97 @@ export class AdminService {
         }
     }
 
+    // hand over control
+    async handoverControl(userId: string, user: IUser) {
+
+        // Start a session
+        const session = await this.connection.startSession();
+        try {
+
+            // start transaction
+            session.startTransaction();
+
+            // admin can not handover control to himself
+            if (userId === user._id.toString()) {
+                throw new Error("Admin can not handover control to himself");
+            }
+
+            const [res] = await this.userModel.aggregate([
+                {
+                    $match: {
+                        _id: new mongoose.Types.ObjectId(userId),
+                        house: new mongoose.Types.ObjectId(user.house),
+                    },
+                },
+                {
+                    $lookup: {
+                        from: COLLECTIONS.houses,
+                        let: { houseId: '$house', userId: '$_id' },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ['$_id', '$$houseId'] },
+                                            { $in: ['$$userId', '$members'] },
+                                        ],
+                                    },
+                                },
+                            },
+                        ],
+                        as: 'house',
+                    },
+                },
+                {
+                    $project: {
+                        _id: 0,
+                        house: { $arrayElemAt: ['$house', 0] },
+                    },
+                },
+            ]);
+            if (!res) {
+                throw new Error("Invalid request");
+            }
+
+            // update current admin
+            await this.userModel.updateOne(
+                { _id: new mongoose.Types.ObjectId(user._id) },
+                {
+                    $set: {
+                        role: 'user',
+                    }
+                },
+                { session }
+            );
+
+            // update user
+            await this.userModel.updateOne(
+                { _id: new mongoose.Types.ObjectId(userId) },
+                {
+                    $set: {
+                        role: 'admin',
+                    }
+                },
+                { session }
+            );
+
+            // update house
+            await this.houseModel.updateOne(
+                { _id: new mongoose.Types.ObjectId(user.house) },
+                {
+                    $set: { admin: new mongoose.Types.ObjectId(userId) },
+                },
+                { session }
+            );
+
+            // Commit the transaction
+            await session.commitTransaction();
+            session.endSession();
+        }
+        catch (error) {
+            // Rollback the transaction in case of error
+            await session.abortTransaction();
+            throw error;
+        }
+    }
 }

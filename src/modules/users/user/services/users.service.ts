@@ -6,6 +6,7 @@ import { isIn } from 'class-validator';
 import { IUser } from '../users.interface';
 import { House } from 'src/modules/house/house.model';
 import { COLLECTIONS, REFERENCE } from 'src/common/config/consts';
+import { CLIENT_RENEG_LIMIT } from 'tls';
 
 @Injectable()
 export class UsersService {
@@ -162,6 +163,82 @@ export class UsersService {
 				{ _id: new mongoose.Types.ObjectId(house) },
 				{
 					$pull: { memberInvitations: new mongoose.Types.ObjectId(user._id) }
+				},
+				{ session }
+			);
+
+			// Commit the transaction
+			await session.commitTransaction();
+			session.endSession();
+		}
+		catch (error) {
+			// Rollback the transaction in case of error
+			await session.abortTransaction();
+			throw error;
+		}
+	}
+
+	// leave house
+	async leaveHouse(user: IUser) {
+
+		// Start a session
+		const session = await this.connection.startSession();
+		try {
+
+			// start transaction
+			session.startTransaction();
+
+			const [res] = await this.userModel.aggregate([
+				{
+					$match: {
+						_id: new Types.ObjectId(user._id),
+						house: new Types.ObjectId(user.house),
+					}
+				},
+				{
+					$lookup: {
+						from: COLLECTIONS.houses,
+						let: { houseId: '$house' },
+						pipeline: [
+							{
+								$match: {
+									$expr: {
+										$and: [
+											{ $eq: ['$_id', '$$houseId'] },
+										],
+									},
+								},
+							},
+						],
+						as: 'house',
+					},
+				},
+				{
+					$project: {
+						_id: 1,
+						house: { $arrayElemAt: ['$house', 0] },
+					},
+				},
+
+			])
+			if (!res) {
+				throw new Error("Invalid request");
+			}
+
+			// update user
+			await this.userModel.updateOne(
+				{ _id: new mongoose.Types.ObjectId(user._id) },
+				{
+					$set: { house: null }
+				},
+				{ session }
+			);
+
+			// update house
+			await this.houseModel.updateOne(
+				{ _id: new mongoose.Types.ObjectId(user.house) },
+				{
+					$pull: { members: new mongoose.Types.ObjectId(user._id) }
 				},
 				{ session }
 			);
