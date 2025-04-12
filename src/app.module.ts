@@ -8,6 +8,7 @@ import { GlobalLoggerMiddleware } from './middlewares/globalLogger';
 import { AuthModule } from './modules/auth/auth.module';
 import { HouseModule } from './modules/house/house.module';
 import { AdminModule } from './modules/users/admin/admin.module';
+import { SingleCostModule } from './modules/single-cost/single-cost.module';
 
 @Module({
 	imports: [
@@ -21,6 +22,7 @@ import { AdminModule } from './modules/users/admin/admin.module';
 		AuthModule,
 		HouseModule,
 		AdminModule,
+		SingleCostModule,
 	],
 	controllers: [],
 	providers: [Logger],

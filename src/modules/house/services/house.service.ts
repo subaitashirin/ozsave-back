@@ -29,7 +29,7 @@ export class HouseService {
             session.startTransaction();
 
             // check if user is already in a house
-            if (user?.houseId) {
+            if (user?.house) {
                 throw new BadRequestException("User already in a house");
             }
 
@@ -48,7 +48,7 @@ export class HouseService {
                     // once house is created, the user becomes admin for the house
                     // so we need to update the user role to admin
                     // remove all house invitations as the user is now in a house
-                    houseId: savedHouse._id,
+                    house: savedHouse._id,
                     houseInvitations: [],
                     role: 'admin',
                 },
