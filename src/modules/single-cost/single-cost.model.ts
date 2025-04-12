@@ -19,7 +19,7 @@ class File {
 }
 const FileSchema = SchemaFactory.createForClass(File);
 
-@Schema({ timestamps: true, autoIndex: true })
+@Schema({ timestamps: false, autoIndex: true })
 export class SingleCostItem {
 
     _id: string | mongoose.Types.ObjectId;
@@ -34,7 +34,7 @@ export class SingleCostItem {
     quantity: number;
 
     @Prop({ required: true })
-    cost: number;
+    totalCost: number;
 }
 
 export const SingleCostItemSchema = SchemaFactory.createForClass(SingleCostItem);
@@ -67,6 +67,13 @@ export class SingleCost {
         required: true,
     })
     user: mongoose.Types.ObjectId;
+
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'House',
+        required: true,
+    })
+    house: mongoose.Types.ObjectId;
 
     createdAt: Date;
     updatedAt: Date;

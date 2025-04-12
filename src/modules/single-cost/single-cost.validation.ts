@@ -8,6 +8,7 @@ import {
     IsOptional,
     IsString,
     MaxLength,
+    Min,
     MinLength,
     ValidateNested,
 } from 'class-validator';
@@ -42,6 +43,7 @@ class SingleCostItemDto {
   
     @ApiProperty({ example: 2.5 })
     @IsNumber({}, { message: 'Item price must be a number' })
+    @Min(0.01, { message: 'Item price must be greater than 0' })
     @IsNotEmpty({ message: 'Item price is required' })
     price: number;
   
@@ -49,11 +51,6 @@ class SingleCostItemDto {
     @IsNumber({}, { message: 'Item quantity must be a number' })
     @IsNotEmpty({ message: 'Item quantity is required' })
     quantity: number;
-  
-    @ApiProperty({ example: 5.0 })
-    @IsNumber({}, { message: 'Item cost must be a number' })
-    @IsNotEmpty({ message: 'Item cost is required' })
-    cost: number;
   }
 
 export class AddSingleCostDto {
