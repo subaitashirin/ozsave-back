@@ -1,7 +1,7 @@
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 export interface IHouse {
-    _id: string | Types.ObjectId;
+    _id: string | mongoose.Types.ObjectId;
     name: string;
     admin: Types.ObjectId;
     members: Types.ObjectId[];

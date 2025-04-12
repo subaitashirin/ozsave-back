@@ -1,7 +1,7 @@
 import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationError, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AllExceptionsFilter } from './common/exception-filters/all-exceptions.filter';
 import { TransformInterceptor } from './common/interceptors/response.interceptor';
@@ -18,17 +18,15 @@ async function bootstrap() {
 
 	app.useGlobalPipes(
 		new ValidationPipe({
-			exceptionFactory: (errors) => errors,
 			stopAtFirstError: true,
 			transform: true,
-			// auto convert dto to instance
 			transformOptions: {
 				enableImplicitConversion: true,
 			},
-			//   skipUndefinedProperties: true,
-			//    skipMissingProperties: true,
-
-		}),
+			exceptionFactory: (errors: ValidationError[]) => {
+				return new BadRequestException(errors);
+			},
+		})
 	);
 
 	app.setGlobalPrefix(prefix);
@@ -37,7 +35,7 @@ async function bootstrap() {
 	// Swagger config remove in production
 	if (env === 'stg' || env === 'dev') {
 		const config = new DocumentBuilder()
-			.setTitle('OzSave')
+			.setTitle('Example Web App API')
 			.setVersion('1.0')
 			.addBearerAuth()
 			.build();

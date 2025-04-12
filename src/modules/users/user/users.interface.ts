@@ -1,8 +1,8 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose, { mongo, Types } from "mongoose";
 import { USER_ROLE } from "./users.constant";
 
 export interface IUser {
-	_id?: string;
+	_id?: string | mongoose.Types.ObjectId;
 	name: string;
 	email: string;
 
@@ -14,7 +14,7 @@ export interface IUser {
 }
 
 export interface IFullUser extends IUser {
-	_id: string;
+	_id: string | mongoose.Types.ObjectId;
 	role: string;
 
 	house: mongoose.Types.ObjectId;
