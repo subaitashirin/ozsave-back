@@ -63,12 +63,9 @@ export class SingleCostService {
                 throw new Error("Invalid request");
             }
 
-            // add house calculation
-            // code here
-
             // total cost per item
             body.items.forEach((item: SingleCostItem) => {
-                item.totalCost = item.price * item.quantity;
+                item.totalCost = parseFloat((item.price * item.quantity).toFixed(2));
             });
 
             // create single cost

@@ -3,6 +3,7 @@ import {
     ArrayMinSize,
     IsArray,
     IsDateString,
+    IsMongoId,
     IsNotEmpty,
     IsNumber,
     IsOptional,
@@ -35,26 +36,35 @@ class FileDto {
     size: number;
 }
 
-class SingleCostItemDto {
+class HouseCostItemDto {
     @ApiProperty({ example: 'Milk' })
     @IsString({ message: 'Item name must be a string' })
     @IsNotEmpty({ message: 'Item name is required' })
     name: string;
-  
+
     @ApiProperty({ example: 2.5 })
     @IsNumber({}, { message: 'Item price must be a number' })
     @Min(0.01, { message: 'Item price must be greater than 0' })
     @IsNotEmpty({ message: 'Item price is required' })
     price: number;
-  
+
     @ApiProperty({ example: 2 })
     @IsNumber({}, { message: 'Item quantity must be a number' })
     @Min(1, { message: 'Item quantity must be at least 1' })
     @IsNotEmpty({ message: 'Item quantity is required' })
     quantity: number;
-  }
 
-export class AddSingleCostDto {
+    @ApiProperty({
+        example: ['661a01f28b4a66c9b3a9f1ef', '661a02108b4a66c9b3a9f1f0'],
+        description: 'Users sharing this item',
+    })
+    @IsArray({ message: 'sharedBy must be an array' })
+    @ArrayMinSize(1, { message: 'At least one user must be included in sharedBy' })
+    @IsMongoId({ each: true, message: 'Each ID in sharedBy must be a valid Mongo ID' })
+    sharedBy: string[];
+}
+
+export class AddHouseCostDto {
     @ApiProperty({ example: 'Coles' })
     @IsString({ message: 'Store name must be a string' })
     @IsNotEmpty({ message: 'Store name is required' })
@@ -64,15 +74,15 @@ export class AddSingleCostDto {
 
     @ApiProperty({ example: '2025-04-10T14:00:00Z', required: false })
     @IsOptional()
-    @IsDateString({}, { message: 'Date must be a valid ISO string' })
+    @IsDateString({}, { message: 'Date must be a valid ISO date string' })
     date?: string;
 
-    @ApiProperty({ type: [SingleCostItemDto] })
+    @ApiProperty({ type: [HouseCostItemDto] })
     @IsArray({ message: 'Items must be an array' })
     @ArrayMinSize(1, { message: 'At least one item is required' })
     @ValidateNested({ each: true })
-    @Type(() => SingleCostItemDto)
-    items: SingleCostItemDto[];
+    @Type(() => HouseCostItemDto)
+    items: HouseCostItemDto[];
 
     @ApiProperty({ type: [FileDto], required: false })
     @IsOptional()
@@ -81,7 +91,7 @@ export class AddSingleCostDto {
     @Type(() => FileDto)
     files?: FileDto[];
 
-    @ApiProperty({ example: 'Weekly grocery shopping', required: false })
+    @ApiProperty({ example: 'Shared kitchen essentials', required: false })
     @IsOptional()
     @IsString({ message: 'Notes must be a string' })
     notes?: string;

@@ -9,6 +9,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { HouseModule } from './modules/house/house.module';
 import { AdminModule } from './modules/users/admin/admin.module';
 import { SingleCostModule } from './modules/single-cost/single-cost.module';
+import { HouseCostModule } from './modules/house-cost/house-cost.module';
 
 @Module({
 	imports: [
@@ -23,6 +24,7 @@ import { SingleCostModule } from './modules/single-cost/single-cost.module';
 		HouseModule,
 		AdminModule,
 		SingleCostModule,
+		HouseCostModule,
 	],
 	controllers: [],
 	providers: [Logger],
