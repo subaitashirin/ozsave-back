@@ -72,11 +72,6 @@ export class AddHouseCostDto {
     @MaxLength(20, { message: 'Store name must be at most 20 characters long' })
     storeName: string;
 
-    @ApiProperty({ example: '2025-04-10T14:00:00Z', required: false })
-    @IsOptional()
-    @IsDateString({}, { message: 'Date must be a valid ISO date string' })
-    date?: string;
-
     @ApiProperty({ type: [HouseCostItemDto] })
     @IsArray({ message: 'Items must be an array' })
     @ArrayMinSize(1, { message: 'At least one item is required' })
@@ -95,4 +90,15 @@ export class AddHouseCostDto {
     @IsOptional()
     @IsString({ message: 'Notes must be a string' })
     notes?: string;
+}
+
+// edit house cost iems
+export class EditHouseCostDto {
+    @ApiProperty({ type: [HouseCostItemDto], required: false })
+    @IsNotEmpty()
+    @IsArray({ message: 'Items must be an array' })
+    @ArrayMinSize(1, { message: 'At least one item is required' })
+    @ValidateNested({ each: true })
+    @Type(() => HouseCostItemDto)
+    items: HouseCostItemDto[];
 }

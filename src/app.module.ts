@@ -10,6 +10,7 @@ import { HouseModule } from './modules/house/house.module';
 import { AdminModule } from './modules/users/admin/admin.module';
 import { SingleCostModule } from './modules/single-cost/single-cost.module';
 import { HouseCostModule } from './modules/house-cost/house-cost.module';
+import { ItemCostModule } from './modules/item-cost/item-cost.module';
 
 @Module({
 	imports: [
@@ -25,6 +26,7 @@ import { HouseCostModule } from './modules/house-cost/house-cost.module';
 		AdminModule,
 		SingleCostModule,
 		HouseCostModule,
+		ItemCostModule,
 	],
 	controllers: [],
 	providers: [Logger],

@@ -12,7 +12,7 @@ export interface IHouseCostItem {
     name: string;
     price: number;
     quantity: number;
-    totalCost: number;
+    totalCost?: number;
     sharedBy: Types.ObjectId[];
 }
 
