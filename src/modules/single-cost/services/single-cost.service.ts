@@ -65,20 +65,25 @@ export class SingleCostService {
                 throw new Error("Invalid request");
             }
 
+            // generate new ObjectId as sinfleCosr for itemCost
+            const newSingleCostId = new mongoose.Types.ObjectId();
+
             const itemCostEntries = body.items.map(item => ({
                 name: item.name,
                 price: item.price,
                 quantity: item.quantity,
                 totalCost: parseFloat((item.price * item.quantity).toFixed(2)),
+                singleCost: newSingleCostId,
                 user: new Types.ObjectId(user._id),
                 house: new Types.ObjectId(user.house),
             }));
             const insertedItemCosts = await this.itemCostModel.insertMany(itemCostEntries, { session });
-            console.log('insertedItemCosts', insertedItemCosts);
+       
             const itemCostIds = insertedItemCosts.map(item => item._id);
-            console.log('itemCostIds', itemCostIds);
+           
             const newSingleCost = new this.singleCostModel({
                 ...body,
+                _id: newSingleCostId,
                 items: itemCostIds,
                 user: new mongoose.Types.ObjectId(user._id),
                 house: new mongoose.Types.ObjectId(user.house)

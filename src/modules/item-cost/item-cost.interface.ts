@@ -5,6 +5,9 @@ export interface IHouseCostItem {
     name: string;
     price: number;
     quantity: number;
-    totalCost?: number;
-    sharedBy: Types.ObjectId[];
+    totalCost: number;
+    singleCost?: Types.ObjectId | null;
+    houseCost?: Types.ObjectId | null;
+    user: Types.ObjectId;
+    house: Types.ObjectId;
 }

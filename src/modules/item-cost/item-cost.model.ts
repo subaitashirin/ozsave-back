@@ -20,6 +20,22 @@ export class ItemCost {
 
     @Prop({
         type: mongoose.Schema.Types.ObjectId,
+        ref: 'SingleCost',
+        required: false,
+        default: null,
+    })
+    singleCost: mongoose.Types.ObjectId;
+
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'HouseCost',
+        required: false,
+        default: null,
+    })
+    houseCost: mongoose.Types.ObjectId;
+
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
     })
