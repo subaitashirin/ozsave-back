@@ -7,20 +7,24 @@ export interface IFile {
     size: number;
 }
 
-export interface IHouseCostItem {
-    _id?: string | Types.ObjectId;
+export interface IHouseItemCost {
+    itemIds: Types.ObjectId[];
+    sharedBy: Types.ObjectId[];
+}
+
+export interface IHouseCostItemDto {
     name: string;
     price: number;
     quantity: number;
     totalCost?: number;
-    sharedBy: Types.ObjectId[];
+    sharedBy: string[]; 
 }
 
 export interface IHouseCost {
     _id?: string | Types.ObjectId;
     storeName: string;
     date?: Date;
-    items: IHouseCostItem[];
+    items: IHouseItemCost[];
     files?: File[];
     notes?: string | null;
     createdAt?: Date;

@@ -17,34 +17,25 @@ export class File {
     @Prop({ type: Number, required: true })
     size: number;
 }
-
 const FileSchema = SchemaFactory.createForClass(File);
 
-@Schema({ timestamps: false, autoIndex: true })
-export class HouseCostItem {
-    _id: string | mongoose.Types.ObjectId;
-
-    @Prop({ required: true })
-    name: string;
-
-    @Prop({ required: true })
-    price: number;
-
-    @Prop({ required: true, default: 1 })
-    quantity: number;
-
-    @Prop({ required: true })
-    totalCost: number;
+@Schema({ timestamps: false, _id: false, autoIndex: true })
+export class ItemCost {
+    @Prop({
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'ItemCost',
+        required: true
+    })
+    itemIds: mongoose.Types.ObjectId[];
 
     @Prop({
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'User',
-        required: true,
+        required: true
     })
     sharedBy: mongoose.Types.ObjectId[];
 }
-
-export const HouseCostItemSchema = SchemaFactory.createForClass(HouseCostItem);
+const ItemCostSchema = SchemaFactory.createForClass(ItemCost);
 
 @Schema({ timestamps: true, autoIndex: true })
 export class HouseCost {
@@ -59,8 +50,8 @@ export class HouseCost {
     @Prop({ type: Date, default: Date.now })
     date: Date;
 
-    @Prop({ type: [HouseCostItemSchema], required: true })
-    items: HouseCostItem[];
+    @Prop({ type: [ItemCostSchema], required: true })
+    items: ItemCost[];
 
     @Prop({ required: false, type: [FileSchema], default: [] })
     files: File[];
@@ -78,5 +69,4 @@ export class HouseCost {
     createdAt: Date;
     updatedAt: Date;
 }
-
 export const HouseCostSchema = SchemaFactory.createForClass(HouseCost);

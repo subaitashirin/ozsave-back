@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 
-export interface IHouseCostItem {
+export interface IItemCost {
     _id?: string | Types.ObjectId;
     name: string;
     price: number;
