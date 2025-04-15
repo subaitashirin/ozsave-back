@@ -68,6 +68,13 @@ export class HouseCost {
     @Prop({ required: false, default: null })
     notes: string;
 
+    @Prop({
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'House',
+        required: true,
+    })
+    house: mongoose.Types.ObjectId;
+
     createdAt: Date;
     updatedAt: Date;
 }

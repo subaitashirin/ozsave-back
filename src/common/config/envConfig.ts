@@ -15,4 +15,6 @@ export default <() => Record<EnvVariables, string | number>>(() => ({
 	JWT_FORGOT_PASSWORD_EXPIRES_IN: process.env.JWT_FORGOT_PASSWORD_EXPIRES_IN,
 
 	BCRYPT_SALT_ROUNDS: Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
+
+	OPENAI_KEY: process.env.OPENAI_KEY,
 }));

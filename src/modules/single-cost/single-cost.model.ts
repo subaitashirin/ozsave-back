@@ -19,26 +19,6 @@ class File {
 }
 const FileSchema = SchemaFactory.createForClass(File);
 
-@Schema({ timestamps: false, autoIndex: true })
-export class SingleCostItem {
-
-    _id: string | mongoose.Types.ObjectId;
-
-    @Prop({ required: true })
-    name: string;
-
-    @Prop({ required: true })
-    price: number;
-
-    @Prop({ required: true, default: 1 })
-    quantity: number;
-
-    @Prop({ required: true })
-    totalCost: number;
-}
-
-export const SingleCostItemSchema = SchemaFactory.createForClass(SingleCostItem);
-
 @Schema({ timestamps: true, autoIndex: true })
 export class SingleCost {
     @Prop({
@@ -52,8 +32,12 @@ export class SingleCost {
     @Prop({ type: Date, default: Date.now })
     date: Date;
 
-    @Prop({ type: [SingleCostItemSchema], required: true })
-    items: SingleCostItem[];
+    @Prop({
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'ItemCost',
+        required: true
+    })
+    items: mongoose.Types.ObjectId[];
 
     @Prop({ required: false, type: [FileSchema], default: [] })
     files: File[];

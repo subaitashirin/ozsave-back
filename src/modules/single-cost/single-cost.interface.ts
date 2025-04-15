@@ -12,7 +12,7 @@ export interface ISingleCostItem {
     name: string;
     price: number;
     quantity: number;
-    totalCost: number;
+    totalCost?: number;
 }
 
 export interface ISingleCost {

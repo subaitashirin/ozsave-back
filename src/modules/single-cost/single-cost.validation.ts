@@ -62,11 +62,6 @@ export class AddSingleCostDto {
     @MaxLength(20, { message: 'Store name must be at most 20 characters long' })
     storeName: string;
 
-    @ApiProperty({ example: '2025-04-10T14:00:00Z', required: false })
-    @IsOptional()
-    @IsDateString({}, { message: 'Date must be a valid ISO string' })
-    date?: string;
-
     @ApiProperty({ type: [SingleCostItemDto] })
     @IsArray({ message: 'Items must be an array' })
     @ArrayMinSize(1, { message: 'At least one item is required' })

@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import mongoose, { Model, Types } from 'mongoose';
 import { User } from 'src/modules/users/user/users.model';
-import { SingleCost, SingleCostItem } from '../single-cost.model';
+import { SingleCost } from '../single-cost.model';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { AddSingleCostDto } from '../single-cost.validation';
 import { IUser } from 'src/modules/users/user/users.interface';
 import { COLLECTIONS } from 'src/common/config/consts';
+import { ItemCost } from 'src/modules/item-cost/item-cost.model';
 
 @Injectable()
 export class SingleCostService {
@@ -13,6 +14,7 @@ export class SingleCostService {
     constructor(
         @InjectModel(User.name) private readonly userModel: Model<User>,
         @InjectModel(SingleCost.name) private readonly singleCostModel: Model<SingleCost>,
+        @InjectModel(ItemCost.name) private readonly itemCostModel: Model<ItemCost>,
         @InjectConnection() private readonly connection: mongoose.Connection,
     ) { }
 
@@ -63,14 +65,26 @@ export class SingleCostService {
                 throw new Error("Invalid request");
             }
 
-            // total cost per item
-            body.items.forEach((item: SingleCostItem) => {
-                item.totalCost = parseFloat((item.price * item.quantity).toFixed(2));
-            });
+            // generate new ObjectId as sinfleCosr for itemCost
+            const newSingleCostId = new mongoose.Types.ObjectId();
 
-            // create single cost
+            const itemCostEntries = body.items.map(item => ({
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                totalCost: parseFloat((item.price * item.quantity).toFixed(2)),
+                singleCost: newSingleCostId,
+                user: new Types.ObjectId(user._id),
+                house: new Types.ObjectId(user.house),
+            }));
+            const insertedItemCosts = await this.itemCostModel.insertMany(itemCostEntries, { session });
+       
+            const itemCostIds = insertedItemCosts.map(item => item._id);
+           
             const newSingleCost = new this.singleCostModel({
                 ...body,
+                _id: newSingleCostId,
+                items: itemCostIds,
                 user: new mongoose.Types.ObjectId(user._id),
                 house: new mongoose.Types.ObjectId(user.house)
             });
