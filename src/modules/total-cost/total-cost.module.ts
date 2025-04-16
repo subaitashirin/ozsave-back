@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TotalCostController } from './total-cost.controller';
-import { TotalCostService } from './total-cost.service';
+import { TotalCostService } from './services/total-cost.service';
 
 @Module({
   controllers: [TotalCostController],
