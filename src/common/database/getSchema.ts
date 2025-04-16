@@ -4,7 +4,7 @@ import { House, HouseSchema } from "src/modules/house/house.model";
 import { ItemCostSchema } from "src/modules/item-cost/item-cost.model";
 import { SingleCost, SingleCostSchema } from "src/modules/single-cost/single-cost.model";
 import { User, UserSchema } from "src/modules/users/user/users.model";
-import { TotalCostSchema } from "src/total-cost/total-cost.model";
+import { TotalCostSchema } from "src/modules/total-cost/total-cost.model";
 
 const models = {
 	'User': {

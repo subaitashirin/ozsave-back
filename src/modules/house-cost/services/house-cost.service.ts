@@ -12,7 +12,7 @@ import { Console } from 'console';
 import { IHouseCostItemDto } from '../house-cost.interface';
 import { IItemCost } from 'src/modules/item-cost/item-cost.interface';
 import { ItemCost } from 'src/modules/item-cost/item-cost.model';
-import { TotalCost } from 'src/total-cost/total-cost.model';
+import { TotalCost } from 'src/modules/total-cost/total-cost.model';
 
 @Injectable()
 export class HouseCostService {
