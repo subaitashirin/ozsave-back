@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model, Types } from 'mongoose';
 import { User } from 'src/modules/users/user/users.model';
-import { HouseCost, ItemCost } from '../house-cost.model';
+import { HouseCost } from '../house-cost.model';
 import { AddHouseCostDto, EditHouseCostDto } from '../house.cost.validation';
 import { IUser } from 'src/modules/users/user/users.interface';
 import { COLLECTIONS } from 'src/common/config/consts';
@@ -11,6 +11,8 @@ import { SingleCost } from 'src/modules/single-cost/single-cost.model';
 import { Console } from 'console';
 import { IHouseCostItemDto } from '../house-cost.interface';
 import { IItemCost } from 'src/modules/item-cost/item-cost.interface';
+import { ItemCost } from 'src/modules/item-cost/item-cost.model';
+import { TotalCost } from 'src/total-cost/total-cost.model';
 
 @Injectable()
 export class HouseCostService {
@@ -19,20 +21,19 @@ export class HouseCostService {
         @InjectModel(User.name) private readonly userModel: Model<User>,
         @InjectModel(House.name) private readonly houseModel: Model<House>,
         @InjectModel(ItemCost.name) private readonly itemCostModel: Model<ItemCost>,
+        @InjectModel(TotalCost.name) private readonly totalCostModel: Model<TotalCost>,
         @InjectModel(HouseCost.name) private readonly houseCostModel: Model<HouseCost>,
         @InjectConnection() private readonly connection: mongoose.Connection,
     ) { }
 
     // add house cost
     async addHouseCost(body: AddHouseCostDto, user: IUser) {
-
-        // Start a session
         const session = await this.connection.startSession();
+
         try {
-            // start transaction
             session.startTransaction();
 
-            // parsing sharedBy to array of ObjectId as unique values
+            // Step 1: Validate that user and all shared users are in the house
             const sharedUserIds = getUniqueUserIds(body.items.map(item => ({
                 ...item,
                 sharedBy: item.sharedBy.map(id => id.toString()),
@@ -48,14 +49,11 @@ export class HouseCostService {
                                 ...sharedUserIds.map(id => new Types.ObjectId(id))
                             ]
                         }
-                    },
-                },
+                    }
+                }
             ]);
-            if (!res) {
-                throw new Error("Invalid request");
-            }
+            if (!res) throw new Error("Invalid request");
 
-            // generate new house cost id
             const newHouseCostId = new mongoose.Types.ObjectId();
 
             const itemCostDocs: IItemCost[] = [];
@@ -64,14 +62,18 @@ export class HouseCostService {
                 sharedBy: Types.ObjectId[];
             }[] = [];
 
-            body.items.forEach(item => {
+            const totalCostDocs: any[] = [];
+            const totalCostIds: Types.ObjectId[] = [];
+
+            body.items.forEach((item) => {
                 const { name, price, quantity, sharedBy } = item;
+                const sharedByObjectIds = sharedBy.map(id => new Types.ObjectId(id));
+                const itemIds: Types.ObjectId[] = [];
 
                 const perUserPrice = parseFloat((price / sharedBy.length).toFixed(2));
                 const totalPerUser = parseFloat((perUserPrice * quantity).toFixed(2));
 
-                const itemIds: Types.ObjectId[] = [];
-
+                // Create ItemCost per user
                 sharedBy.forEach((userId: string) => {
                     const _id = new Types.ObjectId();
 
@@ -90,29 +92,55 @@ export class HouseCostService {
                     itemIds.push(_id);
                 });
 
+                // HouseCost.items entry
                 houseCostItems.push({
                     itemIds,
-                    sharedBy: sharedBy.map(id => new Types.ObjectId(id)),
+                    sharedBy: sharedByObjectIds,
+                });
+
+                // TotalCost doc
+                const totalCostId = new Types.ObjectId();
+                totalCostIds.push(totalCostId);
+
+                totalCostDocs.push({
+                    _id: totalCostId,
+                    name,
+                    price,
+                    quantity,
+                    totalCost: parseFloat((price * quantity).toFixed(2)),
+                    house: new Types.ObjectId(user.house),
+                    houseCost: newHouseCostId,
+                    item: {
+                        itemIds,
+                        sharedBy: sharedByObjectIds,
+                    }
                 });
             });
 
-            // bulk insert into item cost
+            // Insert ItemCosts
             await this.itemCostModel.insertMany(itemCostDocs, { session });
 
+            // Insert TotalCosts
+            await this.totalCostModel.insertMany(totalCostDocs, { session });
+
+            // Insert HouseCost
             const newHouseCost = new this.houseCostModel({
-                ...body,
                 _id: newHouseCostId,
+                storeName: body.storeName,
+                date: new Date(),
+                totalCosts: totalCostIds,
                 items: houseCostItems,
+                files: body.files || [],
+                notes: body.notes || null,
                 house: new mongoose.Types.ObjectId(user.house),
             });
             await newHouseCost.save({ session });
 
-            // // Commit the transaction
+            // commit transaction
             await session.commitTransaction();
             session.endSession();
         }
         catch (error) {
-            // Rollback the transaction in case of error
             await session.abortTransaction();
             session.endSession();
             throw error;
@@ -122,68 +150,67 @@ export class HouseCostService {
     // edit house cost
     async editHouseCost(body: EditHouseCostDto, costId: string | Types.ObjectId, user: IUser) {
 
-        //     const sharedUserIds = getUniqueUserIds(body.items.map(item => ({
-        //         ...item,
-        //         sharedBy: item.sharedBy.map(id => new Types.ObjectId(id)),
-        //     })));
+        const sharedUserIds = getUniqueUserIds(body.items.map(item => ({
+            ...item,
+            sharedBy: item.sharedBy.map(id => id.toString()),
+        })));
 
-        //     console.log(sharedUserIds);
+        const [res] = await this.houseModel.aggregate([
+            {
+                $match: {
+                    _id: new Types.ObjectId(user.house),
+                    members: {
+                        $all: [
+                            new Types.ObjectId(user._id),
+                            ...sharedUserIds.map(id => new Types.ObjectId(id))
+                        ]
+                    }
+                },
+            },
+            {
+                $lookup: {
+                    from: COLLECTIONS.houseCosts,
+                    let: { houseId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$house', '$$houseId'] },
+                                        { $eq: ['$_id', new Types.ObjectId(costId)] },
+                                    ],
+                                },
+                            },
+                        },
+                    ],
+                    as: 'cost',
+                },
+            },
+            { $unwind: '$cost' },
+            {
+                $replaceRoot: {
+                    newRoot: '$cost'
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    items: 1,
+                }
+            }
+        ]);
+        console.log(res);
+        return res;
+        if (!res) {
+            throw new Error("Invalid request");
+        }
 
-        //     const [res] = await this.houseModel.aggregate([
-        //         {
-        //             $match: {
-        //                 _id: new Types.ObjectId(user.house),
-        //                 members: {
-        //                     $all: [
-        //                         new Types.ObjectId(user._id),
-        //                         ...sharedUserIds.map(id => new Types.ObjectId(id))
-        //                     ]
-        //                 }
-        //             },
-        //         },
-        //         {
-        //             $lookup: {
-        //                 from: COLLECTIONS.houseCosts,
-        //                 let: { houseId: '$_id' },
-        //                 pipeline: [
-        //                     {
-        //                         $match: {
-        //                             $expr: {
-        //                                 $and: [
-        //                                     { $eq: ['$house', '$$houseId'] },
-        //                                     { $eq: ['$_id', new Types.ObjectId(costId)] },
-        //                                 ],
-        //                             },
-        //                         },
-        //                     },
-        //                 ],
-        //                 as: 'cost',
-        //             },
-        //         },
-        //         { $unwind: '$cost' },
-        //         {
-        //             $replaceRoot: {
-        //                 newRoot: '$cost'
-        //             },
-        //         },
-        //         {
-        //             $project: {
-        //                 _id: 0,
-        //                 items: 1,
-        //             }
-        //         }
-        //     ]);
-        //     console.log(res);
-        //     if (!res) {
-        //         throw new Error("Invalid request");
-        //     }
+        const oldSharedUserIds = getUniqueUserIds(res.items.map(item => ({
+            ...item,
+            sharedBy: item.sharedBy.map(id => new Types.ObjectId(id)),
+        })));
 
-        //     const oldSharedUserIds = getUniqueUserIds(res.items.map(item => ({
-        //         ...item,
-        //         sharedBy: item.sharedBy.map(id => new Types.ObjectId(id)),
-        //     })));
-
-        //     console.log(oldSharedUserIds, sharedUserIds);
+        console.log(oldSharedUserIds, sharedUserIds);
 
         //     // Logic to calculate costs per user
         //     const costPerUserMap: Record<string, ISingleCostItem[]> = {};

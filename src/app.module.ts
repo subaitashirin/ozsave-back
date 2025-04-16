@@ -11,6 +11,7 @@ import { AdminModule } from './modules/users/admin/admin.module';
 import { SingleCostModule } from './modules/single-cost/single-cost.module';
 import { HouseCostModule } from './modules/house-cost/house-cost.module';
 import { ItemCostModule } from './modules/item-cost/item-cost.module';
+import { TotalCostModule } from './total-cost/total-cost.module';
 
 @Module({
 	imports: [
@@ -27,6 +28,7 @@ import { ItemCostModule } from './modules/item-cost/item-cost.module';
 		SingleCostModule,
 		HouseCostModule,
 		ItemCostModule,
+		TotalCostModule,
 	],
 	controllers: [],
 	providers: [Logger],
