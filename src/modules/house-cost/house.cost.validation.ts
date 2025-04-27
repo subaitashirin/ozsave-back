@@ -55,7 +55,7 @@ class HouseCostItemDto {
     quantity: number;
 
     @ApiProperty({
-        example: ['661a01f28b4a66c9b3a9f1ef', '661a02108b4a66c9b3a9f1f0'],
+        example: ['67f8f074d8a2b96fbcf69c04', '67f8f07dd8a2b96fbcf69c07'],
         description: 'Users sharing this item',
     })
     @IsArray({ message: 'sharedBy must be an array' })

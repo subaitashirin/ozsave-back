@@ -33,11 +33,12 @@ export class HouseCostService {
         try {
             session.startTransaction();
 
-            // Step 1: Validate that user and all shared users are in the house
-            const sharedUserIds = getUniqueUserIds(body.items.map(item => ({
-                ...item,
-                sharedBy: item.sharedBy.map(id => id.toString()),
-            })));
+            const sharedUserIds = getUniqueUserIds(
+                body.items.map(item => ({
+                    ...item,
+                    sharedBy: item.sharedBy.map(id => id.toString()),
+                }))
+            );
 
             const [res] = await this.houseModel.aggregate([
                 {
@@ -52,6 +53,7 @@ export class HouseCostService {
                     }
                 }
             ]);
+
             if (!res) throw new Error("Invalid request");
 
             const newHouseCostId = new mongoose.Types.ObjectId();
@@ -65,24 +67,32 @@ export class HouseCostService {
             const totalCostDocs: any[] = [];
             const totalCostIds: Types.ObjectId[] = [];
 
-            body.items.forEach((item) => {
+            for (const item of body.items) {
                 const { name, price, quantity, sharedBy } = item;
                 const sharedByObjectIds = sharedBy.map(id => new Types.ObjectId(id));
                 const itemIds: Types.ObjectId[] = [];
 
-                const perUserPrice = parseFloat((price / sharedBy.length).toFixed(2));
-                const totalPerUser = parseFloat((perUserPrice * quantity).toFixed(2));
+                // STEP 1: Work on TOTAL, not on PRICE
+                const totalPriceCents = Math.round(price * quantity * 100);
 
-                // Create ItemCost per user
-                sharedBy.forEach((userId: string) => {
+                const basePerPerson = Math.floor(totalPriceCents / sharedBy.length);
+                const remainder = totalPriceCents % sharedBy.length;
+
+                const centsDistribution = sharedBy.map((_, index) =>
+                    index < remainder ? basePerPerson + 1 : basePerPerson
+                );
+
+                sharedBy.forEach((userId: string, index: number) => {
                     const _id = new Types.ObjectId();
+                    const userTotalCost = centsDistribution[index] / 100;
+                    const userPrice = parseFloat((userTotalCost / quantity).toFixed(2)); // Price per unit (average)
 
                     itemCostDocs.push({
                         _id,
                         name,
-                        price: perUserPrice,
+                        price: userPrice,
                         quantity,
-                        totalCost: totalPerUser,
+                        totalCost: userTotalCost,
                         user: new Types.ObjectId(userId),
                         house: new Types.ObjectId(user.house),
                         singleCost: null,
@@ -115,15 +125,11 @@ export class HouseCostService {
                         sharedBy: sharedByObjectIds,
                     }
                 });
-            });
+            }
 
-            // Insert ItemCosts
             await this.itemCostModel.insertMany(itemCostDocs, { session });
-
-            // Insert TotalCosts
             await this.totalCostModel.insertMany(totalCostDocs, { session });
 
-            // Insert HouseCost
             const newHouseCost = new this.houseCostModel({
                 _id: newHouseCostId,
                 storeName: body.storeName,
@@ -134,16 +140,15 @@ export class HouseCostService {
                 notes: body.notes || null,
                 house: new mongoose.Types.ObjectId(user.house),
             });
+
             await newHouseCost.save({ session });
 
-            // commit transaction
             await session.commitTransaction();
-            session.endSession();
-        }
-        catch (error) {
+        } catch (error) {
             await session.abortTransaction();
-            session.endSession();
             throw error;
+        } finally {
+            session.endSession();
         }
     }
 
